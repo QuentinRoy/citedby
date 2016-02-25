@@ -12,14 +12,14 @@ function showErr(err){
 }
 
 class Main extends React.Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state = { references: [] };
-        // Fetch the data.
-        fetch(this.props.dataAddr)
+
+        fetch(props.dataAddr)
             .then(res => res.json())
             .then(references => this.setState({ references }))
-            .catch(showErr)
+            .catch(showErr);
     }
     render(){
         return <RefTable references={this.state.references} />
