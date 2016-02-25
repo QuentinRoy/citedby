@@ -22,7 +22,8 @@ class Main extends React.Component {
             .catch(showErr);
     }
     render(){
-        return <RefTable references={this.state.references} />
+        return this.state.references.length ? <div id="main"><RefTable references={this.state.references} /></div>
+                                            : <div id="main" className="hidden" />
     }
 }
 
