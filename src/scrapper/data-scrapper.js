@@ -61,5 +61,5 @@ function scrapBibtex(bibtexStr){
 readFile(refsBibtexFile)
     .then(buffer => scrapBibtex(buffer.toString()))
     .then(results => mkdirp(path.dirname(scrappingLocation)).then(() => results))
-    .then(results => writeFile(scrappingLocation, JSON.stringify(results)))
+    .then(results => writeFile(scrappingLocation, JSON.stringify(results, null, 2)))
     .catch(console.error);
