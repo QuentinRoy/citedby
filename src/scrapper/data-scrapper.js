@@ -6,14 +6,19 @@ import bibtexFormat from "../bibtex-format-str";
 import common from "../common.js";
 import packageJson from "../../package.json";
 import program from "commander";
+import _mkdirp from "mkdirp"
+import path from "path";
+
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
+const mkdirp = promisify(_mkdirp);
 
 program
     .version(packageJson.version)
     .option("-m, --mail [string]", "Your email")
     .parse(process.argv);
 
-const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
+
 const scrappingLocation = common.scrappingLocation;
 const refsBibtexFile = program.args[0];
 const email = program.mail;
@@ -55,5 +60,6 @@ function scrapBibtex(bibtexStr){
 
 readFile(refsBibtexFile)
     .then(buffer => scrapBibtex(buffer.toString()))
+    .then(results => mkdirp(path.dirname(scrappingLocation)).then(() => results))
     .then(results => writeFile(scrappingLocation, JSON.stringify(results)))
     .catch(console.error);
