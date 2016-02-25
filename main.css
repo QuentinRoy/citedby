@@ -1,0 +1,13 @@
+#ref-table tbody tr:nth-child(odd) {
+    background: #CCC;
+}
+
+#ref-table tbody td {
+    padding: 0.2em 1em;
+}
+
+#ref-table tbody .author-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}

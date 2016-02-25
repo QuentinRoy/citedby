@@ -1,0 +1,16 @@
+{
+    "plugins": [
+        "react"
+    ],
+    rules: {
+        "react/jsx-uses-vars": 2
+    },
+    "env": {
+        "browser": true
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    }
+}
