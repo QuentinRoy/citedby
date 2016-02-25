@@ -21,7 +21,7 @@ module.exports = {
         loaders: ['babel'],
         // Parse only app files! Without this it will go through entire project.
         // In addition to being slow, that will most likely result in an error.
-        include: [ path.join(__dirname, "src/viewer"), path.join(__dirname, "src/common") ]
+        include: [ path.join(__dirname, "src") ]
       }
     ]
   },

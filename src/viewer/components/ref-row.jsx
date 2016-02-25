@@ -1,6 +1,6 @@
 import React from 'react';
 import AuthorList from "./author-list.jsx";
-import bibtexFormat from "../bibtex-format-str.js";
+import bibtexFormat from "../../bibtex-format-str.js";
 
 export default class RefRow extends React.Component {
     render(){

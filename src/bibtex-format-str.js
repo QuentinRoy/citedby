@@ -65,7 +65,6 @@ function bibtexReplace(str){
 const removeBraces = str => str.replace(/{|}/g, "");
 
 export default function bitexFormatStr(str){
-    if(!str.search) debugger;
     // If there is no braces just return the string.
     if(str.search(/{.+}/) < 0){
         return str;
