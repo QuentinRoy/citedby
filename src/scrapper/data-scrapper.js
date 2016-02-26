@@ -58,8 +58,14 @@ function scrapBibtex(bibtexStr){
     }));
 }
 
+// Return a promise factory for f whose resulting value will always be the value with
+// which it has been called.
+const nonFilteringPromise = f => result => Promise.resolve(result).then(f).then(() => result);
+
 readFile(refsBibtexFile)
     .then(buffer => scrapBibtex(buffer.toString()))
-    .then(results => mkdirp(path.dirname(scrappingLocation)).then(() => results))
+    // This promise is non filtering meaning that its resolving value will be the
+    // the resolving value of the preceding one.
+    .then(nonFilteringPromise(() => mkdirp(path.dirname(scrappingLocation))))
     .then(results => writeFile(scrappingLocation, JSON.stringify(results, null, 2)))
     .catch(console.error);

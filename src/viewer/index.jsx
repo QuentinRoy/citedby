@@ -21,9 +21,13 @@ class Main extends React.Component {
             .then(references => this.setState({ references }))
             .catch(showErr);
     }
+
     render(){
-        return this.state.references.length ? <div id="main"><RefTable references={this.state.references} /></div>
-                                            : <div id="main" className="hidden" />
+        if(this.state.references.length){
+            return <div id="main"><RefTable references={this.state.references} /></div>
+        } else {
+            return <div id="main" className="hidden" />
+        }
     }
 }
 
