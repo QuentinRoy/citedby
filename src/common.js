@@ -1,3 +1,3 @@
 export default {
-    scrappingLocation: "./scrapping/data.json"
+    scrapingLocation: "./scraping/data.json"
 }

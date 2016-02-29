@@ -31,4 +31,4 @@ class Main extends React.Component {
     }
 }
 
-ReactDOM.render(<Main dataAddr={common.scrappingLocation} />, document.getElementById('content'));
+ReactDOM.render(<Main dataAddr={common.scrapingLocation} />, document.getElementById('content'));
