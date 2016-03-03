@@ -6,7 +6,6 @@ export default class RefTable extends React.Component {
         super();
     }
     render(){
-        console.log("render table:", this.props);
         const rows = this.props.references.sort(
             (a, b) => (b.gsResult.citedBy || 0) - (a.gsResult.citedBy || 0)
         ).map(
