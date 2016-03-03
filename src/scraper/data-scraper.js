@@ -13,8 +13,7 @@ import userAgents from "./user-agents.json";
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdirp = promisify(_mkdirp);
-const minDelay = 30000;
-const maxDelay = 60000;
+const delayInterval = [180000, 240000];
 const scrapingLocation = common.scrapingLocation;
 
 // Parse command line arguments.
@@ -23,7 +22,9 @@ const refsBibtexFile = program.args[0];
 if(!refsBibtexFile) throw new Error("Bibtex path is required");
 
 // Returns a random number between min (inclusive) and max (exclusive)
-function getRandomInt(min, max) {
+function getRandomInt(...interval) {
+    const max = Math.max(...interval);
+    const min = Math.min(...interval);
     return Math.round(Math.random() * (max - min) + min);
 }
 
@@ -64,33 +65,45 @@ function scrapeRef(request){
     return new Promise((resolve, fail) => scraperPromise.then(resolve, fail));
 }
 
+function getRequestStr(bibEntry){
+    const doi = bibEntry.entryTags.doi ? bibtexFormat(bibEntry.entryTags.doi) : null;
+    if(doi && !doi.startsWith("http") && !doi.startsWith("www")){
+        return doi;
+    } else {
+        const firstAuthor = bibtexFormat(bibEntry.entryTags.author)
+            .split("and")[0]
+            .split(",")[0]
+            .trim();
+        const title = bibtexFormat(bibEntry.entryTags.title);
+        return firstAuthor + ` "${title}"`;
+    }
+}
+
 // Scrap a whole bibtex file. Request are sent sequentially and  a random
 // delay is introduced between request.
 function scrapBibtex(bibtexStr){
     const bib = bibtex.toJSON(bibtexStr);
     const results = [];
     const n = bib.length;
-    const delays = new Array(n - 1).fill(null).map(() => getRandomInt(minDelay, maxDelay));
+    const delays = new Array(n - 1).fill(null).map(() => getRandomInt(...delayInterval));
     const duration = delays.reduce((a, b) => a+b);
-    process.stdout.write(`Scraping will last ~${duration/1000}s (requests are spaced out to avoid being blocked).`);
+    process.stdout.write(`Scraping will last ~${Math.round(duration/1000)}s (requests are spaced out to avoid being blocked).`+ '\n');
     return bib.reduce((promise, bibEntry, i) => {
-        const req = bibtexFormat(bibEntry.entryTags.doi ? bibEntry.entryTags.doi
-                                                        : bibEntry.entryTags.title);
         if(i > 0) {
             promise = promise.then(() => {
                 const delay = delays.pop();
-                process.stdout.write(`Waiting ${delay}ms...`)
+                process.stdout.write(`Waiting ${delay}ms...`+ '\n')
                 return wait(delay)
             });
         }
         promise = promise
             .then(() => {
-                process.stdout.write(`Scraping ${bibEntry.citationKey} (${i+1}/${n}).`);
-                return scrapeRef(req)
+                process.stdout.write(`Scraping ${bibEntry.citationKey} (${i+1}/${n}).`+ '\n');
+                return scrapeRef(getRequestStr(bibEntry));
             })
             .then(gsResult => {
                 if(gsResult.blocked){
-                    process.stdout.write("    Scraping blocked...");
+                    process.stdout.write("    Scraping blocked..."+ '\n');
                 }
                 results.push({ bibEntry, gsResult })
             });
@@ -108,4 +121,4 @@ readFile(refsBibtexFile)
     // the resolving value of the preceding one.
     .then(nonFilteringPromise(() => mkdirp(path.dirname(scrapingLocation))))
     .then(results => writeFile(scrapingLocation, JSON.stringify(results, null, 2)))
-    .catch(process.stderr.write.bind(process.stderr));
+    .catch(...args => process.stdout.write(...args));

@@ -4,8 +4,8 @@ import React from 'react';
 import common from "../common.js";
 
 function showErr(err){
-    if(err.message){
-        console.error(err.stack, err.message);
+    if(err.stack){
+        console.error(err.stack);
     } else {
         console.error(err);
     }
