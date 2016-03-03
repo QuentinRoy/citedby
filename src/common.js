@@ -1,3 +1,4 @@
 export default {
-    scrapingLocation: "./scraping/data.json"
+    scrapingLocation: "./scraping/data.json",
+    scrapingCacheLocation: "./scraping/cache.json"
 }

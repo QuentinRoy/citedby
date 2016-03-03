@@ -9,12 +9,14 @@ import program from "commander";
 import _mkdirp from "mkdirp"
 import path from "path";
 import userAgents from "./user-agents.json";
+import deepEqual from "deep-equal";
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdirp = promisify(_mkdirp);
-const delayInterval = [180000, 240000];
 const scrapingLocation = common.scrapingLocation;
+const cacheLocation = common.scrapingCacheLocation;
+const delayInterval = [180000, 240000];
 
 // Parse command line arguments.
 program.version(packageJson.version).parse(process.argv);
@@ -28,11 +30,9 @@ function getRandomInt(...interval) {
     return Math.round(Math.random() * (max - min) + min);
 }
 
-function wait(delay, returnValue){
-    return new Promise(
-        resolve => setTimeout(() => resolve(returnValue), delay)
-    );
-}
+const wait = (delay, returnValue) => new Promise(
+    resolve => setTimeout(() => resolve(returnValue), delay)
+);
 
 function scrapeRef(request){
     const addr = `https://scholar.google.com.sg/scholar?hl=en&q=${request}`;
@@ -41,8 +41,6 @@ function scrapeRef(request){
     const scraperPromise = scraper.StaticScraper.create()
         .get({
             url: `https://scholar.google.com.sg/scholar?hl=en&q=${request}`,
-            // proxy: "http://31.214.144.178",
-            tunnel : false,
             headers: {
                 'User-Agent': userAgent
             }
@@ -81,29 +79,32 @@ function getRequestStr(bibEntry){
 
 // Scrap a whole bibtex file. Request are sent sequentially and  a random
 // delay is introduced between request.
-function scrapBibtex(bibtexStr){
-    const bib = bibtex.toJSON(bibtexStr);
+function scrapBibtex(bib){
     const results = [];
     const n = bib.length;
+    if(n < 1){ return Promise.resolve(results); }
     const delays = new Array(n - 1).fill(null).map(() => getRandomInt(...delayInterval));
-    const duration = delays.reduce((a, b) => a+b);
-    process.stdout.write(`Scraping will last ~${Math.round(duration/1000)}s (requests are spaced out to avoid being blocked).`+ '\n');
+    const duration = delays.reduce((a, b) => a+b, 0);
+    if(n > 1){
+        process.stdout.write(`Scraping will last ~${ Math.round(duration/1000) }s ` +
+            "(requests are spaced out to avoid being blocked).\n");
+    }
     return bib.reduce((promise, bibEntry, i) => {
         if(i > 0) {
             promise = promise.then(() => {
                 const delay = delays.pop();
-                process.stdout.write(`Waiting ${delay}ms...`+ '\n')
-                return wait(delay)
+                process.stdout.write(`Waiting ${delay}ms...\n`);
+                return wait(delay);
             });
         }
         promise = promise
             .then(() => {
-                process.stdout.write(`Scraping ${bibEntry.citationKey} (${i+1}/${n}).`+ '\n');
+                process.stdout.write(`Scraping ${bibEntry.citationKey} (${ i+1 }/${ n }).\n`);
                 return scrapeRef(getRequestStr(bibEntry));
             })
             .then(gsResult => {
                 if(gsResult.blocked){
-                    process.stdout.write("    Scraping blocked..."+ '\n');
+                    process.stdout.write("    Scraping blocked...\n");
                 }
                 results.push({ bibEntry, gsResult })
             });
@@ -111,14 +112,37 @@ function scrapBibtex(bibtexStr){
     }, Promise.resolve()).then(() => results);
 }
 
-// Return a promise factory for f whose resulting value will always be the value with
-// which it has been called.
-const nonFilteringPromise = f => result => Promise.resolve(result).then(f).then(() => result);
-
-readFile(refsBibtexFile)
-    .then(buffer => scrapBibtex(buffer.toString()))
-    // This promise is non filtering meaning that its resolving value will be the
-    // the resolving value of the preceding one.
-    .then(nonFilteringPromise(() => mkdirp(path.dirname(scrapingLocation))))
-    .then(results => writeFile(scrapingLocation, JSON.stringify(results, null, 2)))
-    .catch(...args => process.stdout.write(...args));
+mkdirp(path.dirname(scrapingLocation))
+    .then(() => Promise.all([
+        readFile(refsBibtexFile)
+            .then(buffer => bibtex.toJSON(buffer.toString())),
+        readFile(cacheLocation)
+            .then(cacheBuffer => JSON.parse(cacheBuffer.toString()))
+            .catch(() => ({}))
+    ]))
+    .then(([bibEntries, cache]) => {
+        const cachedEntries = [];
+        const toScrap = [];
+        for(const entry of bibEntries){
+            const cachedEntry = cache[entry.citationKey];
+            if(cachedEntry && deepEqual(cachedEntry.bibEntry, entry)){
+                cachedEntries.push(cachedEntry)
+            } else {
+                toScrap.push(entry);
+            }
+        }
+        return Promise.all([cachedEntries, scrapBibtex(toScrap), cache]);
+    })
+    .then(([cachedEntries, scrapedEntries, cache]) => {
+        const entries = cachedEntries
+            .concat(scrapedEntries)
+            .sort((e1, e2) => e1.bibEntry.citationKey.localeCompare(e2.bibEntry.citationKey));
+        for(const scrapedEntry of scrapedEntries.filter(e => !e.gsResult.blocked)){
+            cache[scrapedEntry.bibEntry.citationKey] = scrapedEntry;
+        }
+        return Promise.all([
+            writeFile(scrapingLocation, JSON.stringify(entries, null, 2)),
+            writeFile(cacheLocation, JSON.stringify(cache, null, 2))
+        ]);
+    })
+    .catch(err => process.stderr.write(err.stack ? err.stack.toString() : err.toString()));
