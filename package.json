@@ -19,7 +19,6 @@
     "babel-preset-react": "^6.5.0",
     "bibtex-parse-js": "0.0.22",
     "commander": "^2.9.0",
-    "deep-equal": "^1.0.1",
     "es6-promisify": "^3.0.0",
     "eslint-plugin-react": "^4.1.0",
     "exports-loader": "^0.6.3",
