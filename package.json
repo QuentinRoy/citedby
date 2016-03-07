@@ -12,6 +12,7 @@
   "author": "Quentin Roy <quentin@quentinroy.fr>",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.6.5",
     "babel-core": "^6.5.2",
     "babel-loader": "^6.2.3",
     "babel-polyfill": "^6.5.0",
