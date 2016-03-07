@@ -3,32 +3,25 @@ import RefTable from './components/ref-table.jsx';
 import React from 'react';
 import common from "../common.js";
 
-function showErr(err){
-    if(err.stack){
-        console.error(err.stack);
-    } else {
-        console.error(err);
-    }
-}
-
 class Main extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = { references: [] };
-
-        fetch(props.dataAddr)
-            .then(res => res.json())
-            .then(references => this.setState({ references }))
-            .catch(showErr);
+    static get defaultProps(){
+        return { references: [] };
     }
-
     render(){
-        if(this.state.references.length){
-            return <div id="main"><RefTable references={this.state.references} /></div>
-        } else {
-            return <div id="main" className="hidden" />
-        }
+        const className = this.props.references.length > 0 ? null : "hidden";
+        return <div id="main" className={ className }><RefTable {...this.props} /></div>
     }
 }
 
-ReactDOM.render(<Main dataAddr={common.scrapingLocation} />, document.getElementById('content'));
+const content = document.getElementById('content');
+ReactDOM.render(<Main />, content);
+fetch(common.scrapingLocation)
+    .then(res => res.json())
+    .then(references => ReactDOM.render(<Main references={ references } />, content))
+    .catch((err) => {
+        if(err.stack){
+            console.error(err.stack);
+        } else {
+            console.error(err);
+        }
+    });
