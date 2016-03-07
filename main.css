@@ -1,22 +1,31 @@
+body {
+    margin: 1em 0;
+}
+
+#main, #content {
+    margin: 0;
+    padding: 0;
+}
+#ref-table {
+    border-collapse: collapse;
+    margin:0;
+    min-width: 100%;
+}
 #ref-table tbody tr:nth-child(odd) {
     background: #CCC;
 }
-
 #ref-table tbody td {
-    padding: 0.2em 1em;
+    padding: 0.4em 1em;
 }
-
 #ref-table tbody .author-list {
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
-
 #main {
     transition-duration: 200ms;
     opacity: 1;
 }
-
 #main.hidden {
     opacity: 0;
 }
