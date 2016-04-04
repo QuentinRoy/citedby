@@ -56,7 +56,11 @@ function scrapeRef(request){
             const blocked = $("form").first().attr('action') === "CaptchaRedirect";
             const authorsStr = firstResult.find(".gs_a").text().split(" - ")[0]
             const authors = authorsStr.split(",").map(a => a.trim());
-            return { title, citedBy, authors, link, reqAddr: addr, blocked, request };
+            return {
+                title, citedBy, authors, link, blocked, request,
+                reqAddr: addr,
+                scrapDate: Date.now()
+            };
         });
     // Transform scraperjs's promise into a standard promise.
     return new Promise((resolve, fail) => scraperPromise.then(resolve, fail));
