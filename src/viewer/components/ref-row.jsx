@@ -19,20 +19,19 @@ export default class RefRow extends Component {
         const tags = ref.bibEntry.entryTags;
         const scholarResult = ref.gsResult;
         const title = tags.title ? bibtexFormat(tags.title) : tags.title;
-        const citedBy = scholarResult.citedBy;
+        const cited = scholarResult.citedBy;
         const authors = tags.author.split(" and ").map(
             (author) => author.split(", ").map((x) => bibtexFormat(x))
         ).map(
             ([lastName, firstName]) => ({ lastName, firstName })
         );
-        const similarity = getSimilarity(title, scholarResult.title)
-            * getSimilarity(authors[0].lastName, scholarResult.authors[0].split(" ")[1])
+        const similarity = getSimilarity(title, scholarResult.title);
         return (
-            <tr>
-                <td>{title}</td>
-                <td><AuthorList authors={authors} /></td>
-                <td>{citedBy}</td>
-                <td>{similarity.toFixed(2)}</td>
+            <tr className={similarity < 0.9 ? "bib unreliable" : "bib reliable"}>
+                <td className="bib-title">{title}</td>
+                <td className="bib-authors"><AuthorList authors={authors} /></td>
+                <td className="bib-cited">{cited}</td>
+                <td className="bib-confidence">{similarity.toFixed(2)}</td>
             </tr>
         );
     }

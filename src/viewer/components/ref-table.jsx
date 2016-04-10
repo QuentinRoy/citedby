@@ -17,8 +17,8 @@ export default class RefTable extends Component {
                     <tr>
                         <th>Title</th>
                         <th>Authors</th>
-                        <th>Cited By</th>
-                        <th>Confidence score</th>
+                        <th>Cited</th>
+                        <th>Confidence Score</th>
                     </tr>
                 </thead>
                 <tbody>{rows}</tbody>
