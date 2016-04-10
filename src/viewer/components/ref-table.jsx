@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import RefRow from "./ref-row.jsx"
 
-export default class RefTable extends React.Component {
+export default class RefTable extends Component {
     constructor(){
         super();
     }
@@ -18,6 +18,7 @@ export default class RefTable extends React.Component {
                         <th>Title</th>
                         <th>Authors</th>
                         <th>Cited By</th>
+                        <th>Confidence score</th>
                     </tr>
                 </thead>
                 <tbody>{rows}</tbody>

@@ -20,7 +20,7 @@ fetch(common.scrapingLocation)
     .then(references => ReactDOM.render(<Main references={ references } />, content))
     .catch((err) => {
         if(err.stack){
-            console.error(err.stack);
+            console.error(err, err.stack);
         } else {
             console.error(err);
         }

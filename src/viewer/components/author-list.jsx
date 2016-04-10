@@ -1,5 +1,4 @@
-import React from 'react';
-import bibtexFormat from "../../bibtex-format-str.js";
+import React, { Component } from 'react';
 
 function initial(names) {
     const namesArray = names ? Array.isArray(names) ? names : names.split(" ")
@@ -9,12 +8,10 @@ function initial(names) {
                      .map(name => name[0] + ".").join(" ")
 }
 
-export default class AuthorList extends React.Component {
+export default class AuthorList extends Component {
     render(){
         // debugger;
-        const authorEntry = this.props.targetRef.bibEntry.entryTags.author;
-        const authorLis = authorEntry.split(" and ").map((author, authorNum) => {
-            const [lastName, firstName] = author.split(", ").map((x) => bibtexFormat(x));
+        const authorList = this.props.authors.map(({lastName, firstName}, authorNum) => {
             return (
                 <li className="author" key={authorNum}>
                     <span className="author-firstname">{ initial(firstName) }</span>{" "}
@@ -22,6 +19,6 @@ export default class AuthorList extends React.Component {
                 </li>
             );
         });
-        return <ul className="author-list">{authorLis}</ul>;
+        return <ul className="author-list">{authorList}</ul>;
     }
 }
