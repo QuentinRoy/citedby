@@ -1,3 +1,3 @@
 # CitedBy
 
-Scrap the number of citation of a list of papers on Google Scholar.
+Scrap the number of citations of scientific papers from Google Scholar.
